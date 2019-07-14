@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
@@ -24,8 +25,26 @@ type details struct {
 	Duration int
 }
 
+func isAllowed(ip string, list []string) bool {
+	for _, l := range list {
+		out.Info(l)
+		if l == ip {
+			return true
+		}
+	}
+	return false
+}
+
 func get(w http.ResponseWriter, r *http.Request) {
 	p := mux.Vars(r)
+
+	if isAllowed(strings.Split(r.RemoteAddr, ":")[0], strings.Split(os.Getenv("ALLOWED"), ":")) {
+		out.Warn("failed request ", r.RemoteAddr)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	out.Info("new request ", r.RemoteAddr)
 
 	val, err := client.Get(p["key"]).Result()
 	if err == redis.Nil {
@@ -40,7 +59,6 @@ func get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintln(w, val)
-	// fmt.Println(true, p, val)
 }
 
 func output(dev bool) {

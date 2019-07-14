@@ -9,21 +9,21 @@ services:
     - "6379:6379"
     logging:
       driver: "none"
-  put:
-    build: ./request-put
-    container_name: 'put'
-    ports:
-    - "8080:8080"
+  audit:
+    build: ./audit
+    container_name: 'audit'
     networks:
     - micro-net
     depends_on:
     - cache
     volumes:
-    - "output:/put/output"
-    - "data:/put/data"
+    - "output:/audit/output"
+    - "data:/audit/data"
   get:
-    build: ./request-get
+    build: ./get
     container_name: 'get'
+    environment:
+    - ALLOWED = 172.20.0.1
     ports:
     - "8081:8080"
     networks:
@@ -32,16 +32,18 @@ services:
     - cache
     volumes:
     - "output:/put/output"
-  process:
-    build: ./process
-    container_name: 'process'
+  put:
+    build: ./put
+    container_name: 'put'
+    environment:
+    - ALLOWED = 172.20.0.1
+    ports:
+    - "8080:8080"
     networks:
     - micro-net
-    depends_on:
-    - cache
     volumes:
-    - "output:/process/output"
-    - "data:/process/data"
+    - "output:/put/output"
+    - "data:/put/data"
 volumes:
     output:
     data:

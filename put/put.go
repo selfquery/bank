@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -23,7 +24,24 @@ type details struct {
 	Duration int
 }
 
+func isAllowed(ip string, list []string) bool {
+	for _, l := range list {
+		if l == ip {
+			return true
+		}
+	}
+	return false
+}
+
 func set(w http.ResponseWriter, r *http.Request) {
+	if isAllowed(strings.Split(r.RemoteAddr, ":")[0], strings.Split(os.Getenv("ALLOWED"), ":")) {
+		out.Warn("failed request ", r.RemoteAddr)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	out.Info("new request ", r.RemoteAddr)
+
 	var val value
 	w.Header().Set("content-type", "application/json")
 
