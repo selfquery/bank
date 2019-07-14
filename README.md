@@ -1,5 +1,5 @@
 
-# bank :floppy_disk:
+:floppy_disk: Bank
 
 `docker-compose up`
 
