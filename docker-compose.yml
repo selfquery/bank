@@ -1,0 +1,49 @@
+version: "2"
+services:
+  cache:
+    image: redis
+    container_name: 'cache'
+    networks:
+    - micro-net
+    ports:
+    - "6379:6379"
+    logging:
+      driver: "none"
+  put:
+    build: ./request-put
+    container_name: 'put'
+    ports:
+    - "8080:8080"
+    networks:
+    - micro-net
+    depends_on:
+    - cache
+    volumes:
+    - "output:/put/output"
+    - "data:/put/data"
+  get:
+    build: ./request-get
+    container_name: 'get'
+    ports:
+    - "8081:8080"
+    networks:
+    - micro-net
+    depends_on:
+    - cache
+    volumes:
+    - "output:/put/output"
+  process:
+    build: ./process
+    container_name: 'process'
+    networks:
+    - micro-net
+    depends_on:
+    - cache
+    volumes:
+    - "output:/process/output"
+    - "data:/process/data"
+volumes:
+    output:
+    data:
+networks: 
+    micro-net:
