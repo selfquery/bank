@@ -12,6 +12,9 @@ services:
   audit:
     build: ./audit
     container_name: 'audit'
+    environment:
+    - DEBUG=false
+    - OUTPUT=output/process
     networks:
     - micro-net
     depends_on:
@@ -23,7 +26,9 @@ services:
     build: ./get
     container_name: 'get'
     environment:
-    - ALLOWED = 172.20.0.1
+    - DEBUG=false
+    - OUTPUT=output/get
+    - ALLOWED=*
     ports:
     - "8081:8080"
     networks:
@@ -31,12 +36,14 @@ services:
     depends_on:
     - cache
     volumes:
-    - "output:/put/output"
+    - "output:/get/output"
   put:
     build: ./put
     container_name: 'put'
     environment:
-    - ALLOWED = 172.20.0.1
+    - DEBUG=false
+    - OUTPUT=output/put
+    - ALLOWED=*
     ports:
     - "8080:8080"
     networks:

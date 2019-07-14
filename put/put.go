@@ -26,7 +26,10 @@ type details struct {
 
 func isAllowed(ip string, list []string) bool {
 	for _, l := range list {
-		if l == ip {
+		switch l {
+		case "*":
+			return true
+		case ip:
 			return true
 		}
 	}
@@ -34,7 +37,7 @@ func isAllowed(ip string, list []string) bool {
 }
 
 func set(w http.ResponseWriter, r *http.Request) {
-	if isAllowed(strings.Split(r.RemoteAddr, ":")[0], strings.Split(os.Getenv("ALLOWED"), ":")) {
+	if !isAllowed(strings.Split(r.RemoteAddr, ":")[0], strings.Split(os.Getenv("ALLOWED"), ",")) {
 		out.Warn("failed request ", r.RemoteAddr)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -74,21 +77,26 @@ func set(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func output(dev bool) {
+func output() {
 	out = logrus.New()
 	out.SetFormatter(&logrus.JSONFormatter{})
 	out.Out = os.Stdout
 
-	if !dev {
-		file, err := os.OpenFile("output/put", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if os.Getenv("DEBUG") == "false" {
+		out.Info("DEBUG disabled. sending output to file")
+		file, err := os.OpenFile(os.Getenv("OUTPUT"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err == nil {
 			out.Out = file
+		} else {
+			out.WithFields(logrus.Fields{
+				"error": err,
+			}).Fatal("unable to open output file")
 		}
 	}
 }
 
 func main() {
-	output(true)
+	output()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", set).Methods("POST")

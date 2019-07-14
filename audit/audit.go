@@ -76,21 +76,26 @@ func walk(cache *redis.Client) {
 	}
 }
 
-func output(dev bool) {
+func output() {
 	out = logrus.New()
 	out.SetFormatter(&logrus.JSONFormatter{})
 	out.Out = os.Stdout
 
-	if !dev {
-		file, err := os.OpenFile("output/process", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if os.Getenv("DEBUG") == "false" {
+		out.Info("DEBUG disabled. sending output to file")
+		file, err := os.OpenFile(os.Getenv("OUTPUT"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err == nil {
 			out.Out = file
+		} else {
+			out.WithFields(logrus.Fields{
+				"error": err,
+			}).Fatal("unable to open output file")
 		}
 	}
 }
 
 func main() {
-	output(true)
+	output()
 
 	out.Info("creating cache client")
 	client = redis.NewClient(&redis.Options{
