@@ -13,7 +13,7 @@ Content-Type: application/json
     "key":"key",
     "value":"value",
     "avail":[
-        { "start":"4:00pm","duration":30 }
+        { "start":"4:00pm","duration":30 }  // server time, duration in seconds
     ]
 }
 ```
