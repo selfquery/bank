@@ -1,0 +1,58 @@
+version: "2"
+services:
+  cache:
+    image: redis
+    container_name: 'cache'
+    networks:
+    - micro-net
+    ports:
+    - "6379:6379"
+    logging:
+      driver: "none"
+  audit:
+    build: ./audit
+    container_name: 'audit'
+    environment:
+    - DEBUG=false
+    - OUTPUT=output/process
+    networks:
+    - micro-net
+    depends_on:
+    - cache
+    volumes:
+    - "output:/audit/output"
+    - "data:/audit/data"
+  get:
+    build: ./get
+    container_name: 'get'
+    environment:
+    - DEBUG=false
+    - OUTPUT=output/get
+    - ALLOWED=*
+    ports:
+    - "8081:8080"
+    networks:
+    - micro-net
+    depends_on:
+    - cache
+    volumes:
+    - "output:/get/output"
+  put:
+    build: ./put
+    container_name: 'put'
+    environment:
+    - DEBUG=false
+    - OUTPUT=output/put
+    - ALLOWED=*
+    ports:
+    - "8080:8080"
+    networks:
+    - micro-net
+    volumes:
+    - "output:/put/output"
+    - "data:/put/data"
+volumes:
+    output:
+    data:
+networks: 
+    micro-net:

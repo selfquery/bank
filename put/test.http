@@ -1,0 +1,11 @@
+
+POST http://0.0.0.0:8080
+Content-Type: application/json
+
+{
+    "key":"key",
+    "value":"value",
+    "avail":[
+        { "start":"4:00pm","duration":30 }
+    ]
+}
